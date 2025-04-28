@@ -1,0 +1,28 @@
+services:
+  k3s-server:
+    image: rancher/k3s:v1.32.3-k3s1
+    command: server --selinux
+    privileged: true
+    environment:
+      - K3S_KUBECONFIG_OUTPUT=/output/kubeconfig.yaml
+      - K3S_KUBECONFIG_MODE=666
+    volumes:
+      - k3s-server:/var/lib/rancher/k3s
+      - ./manifests:/manifests:Z,ro
+    ports:
+      - "6443:6443" # Kubernetes API Server
+
+  k3s-agent:
+    image: rancher/k3s:v1.32.3-k3s1
+    privileged: true
+    depends_on:
+      - k3s-server
+    environment:
+      - K3S_URL=https://k3s-server:6443
+      - K3S_TOKEN=your_cluster_secret
+    volumes:
+      - k3s-agent:/var/lib/rancher/k3s
+
+volumes:
+  k3s-server:
+  k3s-agent:

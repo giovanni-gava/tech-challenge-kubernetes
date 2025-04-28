@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: insert-pod-job
+spec:
+  template:
+    metadata:
+      labels:
+        app: insert-pod-job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: runner
+        image: public.ecr.aws/p4x2r4c1/python-psycopg2:latest
+        command: ["/bin/bash", "-c", "python /opt/script/script.py"]
+        volumeMounts:
+          - name: script-vol
+            mountPath: /opt/script
+        env:
+          - name: DB_HOST
+            value: "postgresql-db"
+          - name: DB_NAME
+            value: "testdb"
+          - name: DB_USER
+            value: "postgres"
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+      volumes:
+      - name: script-vol
+        configMap:
+          name: script-config

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-db
+spec:
+  serviceName: postgresql-db-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql-db
+  template:
+    metadata:
+      labels:
+        app: postgresql-db
+    spec:
+      containers:
+      - name: postgresql-db
+        image: postgres:17
+        ports:
+          - containerPort: 5432
+            name: postgres
+        env:
+          - name: POSTGRES_DB
+            value: "testdb"
+          - name: POSTGRES_PASSWORD
+            value: "testpassword"
+        volumeMounts:
+          - name: postgresql-db-disk
+            mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgresql-db-disk
+          emptyDir: {}
