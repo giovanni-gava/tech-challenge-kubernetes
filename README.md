@@ -1,42 +1,53 @@
-# DevOps Kubernetes Task
+# Tech Challenge: Kubernetes Log Application
 
-## Application Details
+## Overview
 
-Our great log application can't persistently store data in Postgres. Please fix it. 🙏😺
+This project runs a Python job in Kubernetes that inserts data into a PostgreSQL database.  
+It simulates the behavior of log persistence across pod restarts.
 
-The application is a python job hosted on Kubernetes. You need to set up the Kubernetes "cluster" using k3s and Docker Compose.
+## Architecture
+
+- Kubernetes cluster via k3s (Docker Compose)
+- Python job container (psycopg2)
+- PostgreSQL database (StatefulSet)
 
 ## How to Run
 
-1. **Start the K3S containers:**
+1. Start the cluster:
 
-   ```bash
-   docker compose up -d
-   ```
+    ```bash
+    docker compose up -d
+    ```
 
-2. **Access the running container:**
+2. Enter the server container:
 
-   ```bash
-   docker compose exec k3s-server sh
-   ```
+    ```bash
+    docker compose exec k3s-server sh
+    ```
 
-3. **Apply the Kubernetes manifests using Kustomize inside the container:**
+3. Deploy resources:
 
-   ```bash
-   kubectl apply -k ./manifests/
-   ```
-
-   You can modify files in the `manifests` directory and reapply them using the command above.
+    ```bash
+    kubectl apply -k ./manifests/
+    ```
 
 ## How to Test
 
-To verify that the task is finished correctly, you need to be sure that the python job is writing logs to the Postgres database
-and this information is still available after Postgres pod restart.
-You can execute into PG pod and check the logs table in testdb database.
+1. Check Python job logs.
+2. Restart PostgreSQL pod:
 
-### Tips
+    ```bash
+    kubectl delete pod <postgresql-pod-name>
+    ```
 
-How to restart python job quicly
+3. Verify logs persist:
+
+    ```bash
+    kubectl exec -it <postgresql-pod-name> -- psql -U postgres -d testdb
+    SELECT * FROM logs;
+    ```
+
+## Quick Job Restart
+
 ```bash
 ./manifests/restart_job.sh
-```
